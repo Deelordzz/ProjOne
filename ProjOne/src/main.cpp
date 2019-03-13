@@ -7,17 +7,18 @@
   This example code is in the public domain.
  */
  
-// Pin 13 has an LED connected on most Arduino boards.
-// Pin 11 has the LED on Teensy 2.0
-// Pin 6  has the LED on Teensy++ 2.0
-// Pin 13 has the LED on Teensy 3.0
-// give it a name:
-int led = 13;
 
+//int led = 13;
+//int led = LED_BUILTIN;
+//#define led 13 
+//unsigned int led = 13;
+uint32_t led = 13; //Unsigned integer at 32bit
+ 
 // the setup routine runs once when you press reset:
 void setup() {                
   // initialize the digital pin as an output.
-  pinMode(led, OUTPUT);     
+  Serial.begin(9600);
+  pinMode(led, OUTPUT);      
 }
 
 // the loop routine runs over and over again forever:
@@ -26,4 +27,13 @@ void loop() {
   delay(1000);               // wait for a second
   digitalWrite(led, LOW);    // turn the LED off by making the voltage LOW
   delay(1000);               // wait for a second
+  Serial.print("led value: ");
+  Serial.println(led);
+  Serial.print("# of bytes ");
+  Serial.println((int)sizeof(led));
+  int numberone = 2147483647;
+  Serial.print("numberone = ");
+  Serial.println(numberone);
+  Serial.print("numberone + 1 = ");
+  Serial.println(numberone + 1);
 }
