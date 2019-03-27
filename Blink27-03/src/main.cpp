@@ -1,7 +1,10 @@
 #include <Arduino.h>
+#include "ledfunctions.h"
 
-uint8_t ledPin = 0; //pin of led
-uint32_t delaytime_ms = 50; 
+
+uint8_t ledPinA = 0; //pin of led
+uint8_t ledPinB = 14;
+uint32_t delaytime_ms = 100; 
 //uint32_t prevtime_ms = 0;
 //uint32_t currenttime_ms = 0;
 bool ledstate = LOW;
@@ -9,7 +12,8 @@ bool ledstate = LOW;
 // the setup function runs once when you press reset or power the board
 void setup() {
   // initialize External LED as an output.
-  pinMode(ledPin, OUTPUT);
+  pinMode(ledPinA, OUTPUT);
+  pinMode(ledPinB, OUTPUT);
  }
 
 void loop() {
@@ -19,14 +23,11 @@ void loop() {
   if ((currenttime_ms-prevtime_ms) >= delaytime_ms) {
     //reset timer
     prevtime_ms = currenttime_ms;
-    //toggle the led
-    if(ledstate == HIGH){//if LED is ON, Switch LED off
-    ledstate = LOW;
-    } 
-    else{ //Switch led ON
-    ledstate = HIGH;
-    }
-    digitalWrite(ledPin, ledstate);
+    toggleLED(ledPinA);
+    toggleLED(ledPinB);
+    
+    
     //digitalWrite(ledPin, !digitalRead(ledPin));
   }
-}   
+}
+
