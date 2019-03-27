@@ -21,5 +21,4 @@ void loop() {
   Serial.print("c: ");
   Serial.println(c, BIN);
 
- 
 }
