@@ -2,7 +2,7 @@
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(500000);
+  Serial.begin(9600);
   analogReadResolution(12);
 }
 
