@@ -40,10 +40,6 @@ void loop() {
 }
 
 void ISR() {
-  static uint32_t previousTime_ms = 0;
-  uint32_t currentTime_ms = millis();
-
-  if((currentTime_ms - previousTime_ms) > DEBOUNCETIME_MS);{
      previousTime_ms = currentTime_ms;
   Serial.print(frequency);
     Serial.println("Hz ");
