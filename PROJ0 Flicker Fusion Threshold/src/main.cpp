@@ -1,13 +1,13 @@
 #include <Arduino.h>
 
-uint32_t ledlight = 0;
-uint32_t button = 12;
-uint32_t ledState = LOW;
+uint8_t ledlight = 0;
+uint8_t button = 12;
+uint8_t ledState = LOW;
 unsigned long previousMillis = 0;
 float interval;
 float value = 0;
 float frequency = 0;
-const uint32_t DEBOUNCETIME_MS = 100;
+
 void ISR();
 
 void setup() {
@@ -40,9 +40,7 @@ void loop() {
 }
 
 void ISR() {
-     previousTime_ms = currentTime_ms;
-  Serial.print(frequency);
+     Serial.print(frequency);
     Serial.println("Hz ");
-    Serial.flush();
-  }
+    Serial.flush(); 
 }
