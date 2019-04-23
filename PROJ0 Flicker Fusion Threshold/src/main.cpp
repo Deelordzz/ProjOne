@@ -1,3 +1,6 @@
+/* Flicker Fusion Threshold */
+/* Author: Lourdrigo de Castro */
+
 #include <Arduino.h>
 
 uint8_t ledlight = 0; // LED connected to pin 0
