@@ -8,7 +8,7 @@ uint8_t button = 12; // button connected to pin 12
 uint8_t ledState = LOW; // used to set the LED
 unsigned long previousMillis = 0; // will store last time LED was updated 
 float frequency; // 1/period; frequency value
-unsigned long value = 0; // value read from the potentiometer
+unsigned value = 0; // value read from the potentiometer
 float period = 0; // value output in millisecond for the interval of the LED blink
 const uint32_t DEBOUNCETIME_MS = 100; //debounce time
 
@@ -19,16 +19,16 @@ void setup() {
   pinMode(button, INPUT_PULLUP); // set the digital pin as input and enable internal pullup resistor 
   attachInterrupt(digitalPinToInterrupt(button), ISR_button, FALLING); // attached interrupt to call ISR_button()
   Serial.begin(9600);
-
 }
 
 void loop() {
   unsigned long currentMillis = millis(); // set the current time in millisecond
   value = analogRead(A0); // Read the analog value on pin A0
-  period = (map(value, 0 , 1023, 5 , 100)); // mapping of the potentiometer
-  frequency = (1/period) * 500; // frequency @ 50% duty cycle
+  frequency = (map(value, 0.00 , 1023.00, 5.00 , 100.00)); // mapping of the potentiometer
+  period = (1.00/frequency) * 500.00; // period @ 50% duty cycle
   // check to see if its time to blink
-  if (currentMillis - previousMillis >= period) { // comparing the difference between the cuurent time and the last time the LED blink to the value of the period
+  if (currentMillis - previousMillis >= period) { // comparing the difference between the cuurent time and the last time the 
+                                                  //LED blink to the value of the period
     if (ledState == LOW) {                        // turn off the LED if its ON and vice versa
       ledState = HIGH;
     } else {
