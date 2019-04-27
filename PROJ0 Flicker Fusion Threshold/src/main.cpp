@@ -24,7 +24,7 @@ void setup() {
 void loop() {
   unsigned long currentMillis = millis(); // set the current time in millisecond
   value = analogRead(A0); // Read the analog value on pin A0
-  frequency = (map(value, 0.00 , 1023.00, 5.00 , 100.00)); // mapping of the potentiometer
+  frequency = (map(value, 0 , 1023, 5 , 100)); // mapping of the potentiometer
   period = (1.00/frequency) * 500.00; // period @ 50% duty cycle
   // check to see if its time to blink
   if (currentMillis - previousMillis >= period) { // comparing the difference between the cuurent time and the last time the 
