@@ -35,13 +35,15 @@ SevSeg myDisplay;
 
 //Create global variables
 unsigned long timer;
+uint8_t buttonState;             // the current reading from the input pin
+uint8_t buttonState2;
+bool keyPressed = false;
+uint32_t timeDebounce = 500;
 int deciSecond = 0;
 int display = 0;
-bool start = false;
 uint8_t R_button = 23; // button connected to pin 12
 uint8_t SS_button = 2; // button connected to pin 12
-unsigned long diffTime = 0;
-uint32_t debouncetime = 50; //debounce time
+
 void ISR_Start_Stop();
 void ISR_Reset();
 void stopwatch();
@@ -50,8 +52,8 @@ void setup()
 {
   pinMode(R_button, INPUT_PULLUP); // set the digital pin as input and enable internal pullup resistor
   pinMode(SS_button, INPUT_PULLUP); // set the digital pin as input and enable internal pullup resistor
-  attachInterrupt(digitalPinToInterrupt(R_button), ISR_Start_Stop, FALLING); // attached interrupt to call ISR_button()
-  attachInterrupt(digitalPinToInterrupt(SS_button), ISR_Reset, FALLING); // attached interrupt to call ISR_button()
+  attachInterrupt(digitalPinToInterrupt(SS_button), ISR_Start_Stop, FALLING); // attached interrupt to call ISR_button()
+  attachInterrupt(digitalPinToInterrupt(R_button), ISR_Reset, FALLING); // attached interrupt to call ISR_button()
   int displayType = COMMON_CATHODE; //Your display is either common cathode or common anode
 
   
@@ -83,19 +85,31 @@ void setup()
 
 void loop()
 {
-  static unsigned long Starttime;
-  if (start == false) {
-    stopwatch();
-    Starttime = millis();
-  }
-  else
+ if (keyPressed)
   {
-    diffTime = (millis() - Starttime);
-    display = (diffTime/100);
-    stopwatch(); 
+   stopwatch();
+  } else {
+      char tempString[10];
+      sprintf(tempString, "%4d", deciSecond);
+      myDisplay.DisplayString(tempString, 4);
+     }
+    
+} 
+ 
+void ISR_Start_Stop()
+{
+ uint32_t timeNewKeyPress = millis();
+ static uint32_t timeLastKeyPress = 0;
+ if ( timeNewKeyPress - timeLastKeyPress >= timeDebounce)
+    {              
+     if (SS_button != buttonState) {
+          keyPressed = !keyPressed;
+      }
+      timeLastKeyPress = timeNewKeyPress;
+    }
   }
+          
 
-}
 void stopwatch(){
   //Example ways of displaying a decimal number
   char tempString[10]; //Used for sprintf
@@ -111,4 +125,14 @@ void stopwatch(){
   }
 }
 
-}
+void ISR_Reset()
+{
+ uint32_t timeNewKeyPress = millis();
+ static uint32_t timeLastKeyPress = 0;
+ if ( timeNewKeyPress - timeLastKeyPress >= timeDebounce)
+    {              
+     if (R_button != buttonState2) {
+          }
+      timeLastKeyPress = timeNewKeyPress;
+    }
+  }
