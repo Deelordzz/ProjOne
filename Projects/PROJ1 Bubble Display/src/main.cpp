@@ -1,6 +1,6 @@
-/*
+/* Bubble-Display */
+/* Author: Lourdrigo de Castro*/
 
- */
 #include <Arduino.h>
 #include "SevSeg.h"
 
@@ -8,12 +8,11 @@
 SevSeg myDisplay;
 
 //Create global variables 
-unsigned long Elapsetime = 0; // will store the last time the stopwatch is counting.
+unsigned long OnTime = 0; // will store the last time the stopwatch is counting.
 unsigned long Stoptime = 0; // will store the last time the stopwatch is stopped.             
 bool ButtonOn = false; // use to detect if the button is ON
 int deciSecond = 0; // initial count in decisecond
 const uint32_t timeDebounce = 500; //debounce time
-uint8_t buttonState; // use to set the button  
 uint8_t R_button = 23; // button connected to pin 23
 uint8_t SS_button = 2; // button connected to pin 2
 
@@ -55,46 +54,46 @@ void setup()
 }
 
 void loop(){
- if (ButtonOn) { 
-   stopwatch();
-  } else {
-      Stoptime = millis() - Elapsetime; 
-      char tempString[10];
+ if (ButtonOn) { //check if the ButtonON is turned ON. 
+  stopwatch(); // call the stopwatch function
+    } else {
+      Stoptime = millis() - OnTime; // time the stopwatch is stopped.
+      char tempString[10]; // display the current time in decisecond.
       sprintf(tempString, "%4d", deciSecond);
       myDisplay.DisplayString(tempString, 4);
     }
-} 
- 
-void ISR_Start_Stop(){
- uint32_t timeNewKeyPress = millis();
- static uint32_t timeLastKeyPress = 0;
- if ( timeNewKeyPress - timeLastKeyPress >= timeDebounce) {              
-  if (SS_button != buttonState) {
-    ButtonOn = !ButtonOn;
-    }
-    timeLastKeyPress = timeNewKeyPress;
+ if (deciSecond == 9000){ //stopwatch will reset at 9000 decisecond or 15minutes
+   ButtonOn = LOW;
+   ISR_Reset();
   }
+}
+
+void stopwatch(){
+char tempString[10]; // display the current time in decisecond.
+sprintf(tempString, "%4d", deciSecond); 
+myDisplay.DisplayString(tempString, 4); 
+
+OnTime = (millis() -  Stoptime); // time the stopwatch is counting.
+deciSecond = (OnTime/100); // millisecond is converted to deciseconds.
+}
+
+void ISR_Start_Stop(){
+ uint32_t timeNewKeyPress = millis(); // set the time the SS_button is not pressed
+ static uint32_t timeLastKeyPress = 0; //time the SS_button is pressed
+ if ( timeNewKeyPress - timeLastKeyPress >= timeDebounce) { // equating to the timeDebounce              
+    ButtonOn = !ButtonOn; //sets the state of the button everytime the SS_button is pressed
+  }
+    timeLastKeyPress = timeNewKeyPress; //reset the debouncing timer
 }
          
-void stopwatch(){
-char tempString[10]; //Used for sprintf
-sprintf(tempString, "%4d", deciSecond); //Convert deciSecond into a string that is right adjusted
-myDisplay.DisplayString(tempString, 4); //(numberToDisplay, decimal point location in binary number [4 means the third digit])
-
-Elapsetime = (millis() -  Stoptime);
-deciSecond = (Elapsetime/100); // add 1 per 10ms
-}
-
 void ISR_Reset(){
-uint32_t timeNewKeyPress = millis();
-static uint32_t timeLastKeyPress = 0;
-if ( timeNewKeyPress - timeLastKeyPress >= timeDebounce) {              
-  if (SS_button != buttonState) {
-    if (ButtonOn == LOW){
-      Elapsetime = 0;
-      deciSecond = 0;
-      }
+uint32_t timeNewKeyPress = millis(); // set the time the R_button is not pressed
+static uint32_t timeLastKeyPress = 0; //time the R_button is pressed
+if ( timeNewKeyPress - timeLastKeyPress >= timeDebounce) { // equating to the timeDebounce               
+  if (ButtonOn == LOW){ // check if the ButtonOn is OFF
+      OnTime = 0; //Reset the OnTime to zero
+      deciSecond = 0; //Rreset the deciSecond to zero
     }
-    timeLastKeyPress = timeNewKeyPress;
   }
+    timeLastKeyPress = timeNewKeyPress; //reset the debouncing timer
 }
