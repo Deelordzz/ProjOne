@@ -4,17 +4,17 @@
 
 ## <center>Frank Beinersdorf</center>
 
-<center>Wellington Institute of Technology</center>
+Wellington Institute of Technology
 
-<center> School of Engineering</center>
+School of Engineering
 
-<center>May 19, 2018</center>
+May 19, 2018
 
 ## <center> Lourdrigo de Castro
 
-<center>Wellington Institute of Technology
+Wellington Institute of Technology
 
-<center>School of Engineering
+School of Engineering
 
 ## Abstract
 
