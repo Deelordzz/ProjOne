@@ -3,17 +3,12 @@
 ## <center>EMBEDDED SYSTEMS</center>
 
 ## <center>Frank Beinersdorf</center>
-
 Wellington Institute of Technology
-
 School of Engineering
-
 May 19, 2018
 
 ## <center> Lourdrigo de Castro
-
 Wellington Institute of Technology
-
 School of Engineering
 
 ## Abstract
@@ -217,11 +212,9 @@ _Figure 6: Third Trial_
 
 ## **Discussion**
 
-Every single person has their own threshold in identifying if a light is flickering. It is subjective to everyone who is seeing the light source. The light appears to be stable at higher frequency while the flashing light becomes noticeable at lower frequency.
-
-Using an embedded system, I measured my own threshold in identifying the LED flickering. I can still see the light flashing on and off at 50 Hz and becomes steady beyond this frequency. Since the threshold is subjective to other people, they might have a different result. People with higher threshold are most likely to experience eye strain or headache on normal lighted places.
-
-This is a simple yet powerful device that uses an embedded system. It is very useful in everyday lives. This project can be use in medical field for analysis of a person medical condition or in researched and development to improve consumer devices. This is only one thing out of a million things that an embedded system can do for us.
+This project shows us how a microcontroller can control multiple LED’s and present it as a numerical character on a device such as a bubble display. In this project, I use it to control the bubble display and to make it function as a stopwatch. Using the internal time function of the microcontroller, the timing of the stopwatch becomes accurate. I was able to eliminate the use of delay function that can make the other function of the program idle. 
+   
+On a larger application, this can be use on an LED show that can project images and lights up a big event. This is truly one of an amazing purpose of an embedded system.     
 
 ## **Reference**
 
