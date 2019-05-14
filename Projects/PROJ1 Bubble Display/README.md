@@ -197,13 +197,17 @@ All hardwares are functioning as programmed. The **SS_button** starts and stops 
 Three trials were conducted in testing this embedded system. The first trial was stopped at 6seconds. The values are identical with the bubble display and an external stopwatch.
 
 ![enter image description here](https://i.ibb.co/zJMh6Bw/fig11.png)
+
 _Figure 4: First Trial_
 
 The second and third trial also resulted an almost identical value from the bubble display and an external stopwatch. The time log is at 23.8 seconds and 59.9 seconds respectively.
 
 ![enter image description here](https://i.ibb.co/vLNzXhN/fig12.jpg)
+
 _Figure 5: Second Trial_
+
 ![fig13](https://i.ibb.co/FzS8gn7/fig13.png)
+
 _Figure 6: Third Trial_
 
 ## **Discussion**
