@@ -2,13 +2,18 @@
 
 ## <center>EMBEDDED SYSTEMS</center>
 
-## <center>Frank Beinersdorf
-<center>Wellington Institute of Technology
-<center> School of Engineering
-<center>April 28, 2018
+## <center>Frank Beinersdorf</center>
+
+<center>Wellington Institute of Technology</center>
+
+<center> School of Engineering</center>
+
+<center>May 19, 2018</center>
 
 ## <center> Lourdrigo de Castro
+
 <center>Wellington Institute of Technology
+
 <center>School of Engineering
 
 ## Abstract
