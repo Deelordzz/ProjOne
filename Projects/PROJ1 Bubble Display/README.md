@@ -3,11 +3,13 @@
 ## <center>EMBEDDED SYSTEMS</center>
 
 ## <center>Frank Beinersdorf</center>
+
 Wellington Institute of Technology
 School of Engineering
 May 19, 2018
 
 ## <center> Lourdrigo de Castro
+
 Wellington Institute of Technology
 School of Engineering
 
@@ -213,7 +215,7 @@ _Figure 6: Third Trial_
 ## **Discussion**
 
 This project shows us how a microcontroller can control multiple LED’s and present it as a numerical character on a device such as a bubble display. In this project, I use it to control the bubble display and to make it function as a stopwatch. Using the internal time function of the microcontroller, the timing of the stopwatch becomes accurate. I was able to eliminate the use of delay function that can make the other function of the program idle. 
-   
+
 On a larger application, this can be use on an LED show that can project images and lights up a big event. This is truly one of an amazing purpose of an embedded system.     
 
 ## **Reference**
