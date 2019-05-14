@@ -5,12 +5,15 @@
 ## <center>Frank Beinersdorf</center>
 
 Wellington Institute of Technology
+
 School of Engineering
+
 May 19, 2018
 
 ## <center> Lourdrigo de Castro
 
 Wellington Institute of Technology
+
 School of Engineering
 
 ## Abstract
