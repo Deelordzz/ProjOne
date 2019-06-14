@@ -13,9 +13,6 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire);
 
 #define LOGO_HEIGHT   64  
 #define LOGO_WIDTH    128
-#define XPOS   0 // Indexes into the 'icons' array in function below
-#define YPOS   1
-#define DELTAY 2
 
 uint32_t x = 0;
 uint32_t x_ave =0;
@@ -26,11 +23,19 @@ uint8_t Apple_y;
 static int8_t Apple_y_new = 1;
 uint8_t score = 0;
 uint8_t TotalApples = 0;
+uint8_t NumberofApples = 0;
 int8_t f;
-
-int ledState = WHITE;
+uint8_t S_button = 16;
+const uint32_t timeDebounce = 500; //debounce time
+bool ButtonOn = LOW; // use to detect if the button is ON
+bool CheckScore = LOW;
+bool CheckFinalScore = LOW;
+int FontColor = WHITE;
 unsigned long previousMillis = 0;
 const long interval = 500;
+
+enum State{S_Start, S_Play, S_Score, S_Nextlevel, S_Pause};
+     State Current_state = S_Start;
 
 static const unsigned char PROGMEM Apple[] = 
 {
@@ -182,68 +187,183 @@ static const unsigned char PROGMEM Congrats_page[] =
 void Play();
 void Title();
 void Congrats();
+void ISR_Start(); // Start Stop func
 
 void setup() {
+  pinMode(S_button, INPUT_PULLUP); // set the digital pin as input and enable internal pullup resistor
+  attachInterrupt(digitalPinToInterrupt(S_button), ISR_Start, FALLING); // attached interrupt to call ISR_Reset()
   Serial.begin(9600);
   Wire.setClock(3400000);
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   display.display();
+  
 }
 
 void loop() {
-//Congrats();
-//Title();
-Play();
+switch (Current_state){
+  case S_Start:{
+    Title();
+    score = 0;
+    TotalApples = 0;
+    Apple_y_new = 1;
+    if(ButtonOn == HIGH){
+      Current_state = S_Play;
+    }
+  break;
+  }
+
+  case S_Play:{
+    Play();
+    if(ButtonOn == HIGH){
+      Current_state = S_Pause;
+    }
+    if(CheckScore == HIGH){
+      Current_state = S_Nextlevel;
+    }
+    if(CheckFinalScore == HIGH){
+      Current_state = S_Score;
+    }
+  break;
+  }
+
+  case S_Pause:{
+    ButtonOn = LOW;
+    display.setTextSize(0); // Draw 2X-scale text
+    display.setTextColor(FontColor);
+    display.setCursor(40, 20);
+    display.print(F("PAUSED")); 
+    display.display();
+
+    unsigned long currentMillis = millis();
+
+    if (currentMillis - previousMillis >= interval) {
+      previousMillis = currentMillis;
+      if (FontColor == WHITE) {
+        FontColor = BLACK;
+      } else {
+          FontColor = WHITE;
+        }
+    }
+    
+    if  (ButtonOn == HIGH){
+      Current_state = S_Play;
+    }
+  break;
+  }
+
+  case S_Nextlevel:{
+    CheckScore = LOW;
+    if  (score >= TotalApples/2 ) {
+      Congrats();
+      if  (ButtonOn == HIGH){
+        Current_state = S_Play;
+      } 
+    } else {
+        display.clearDisplay();
+        display.setTextSize(2); // Draw 2X-scale text
+        display.setTextColor(FontColor);
+        display.setCursor(40, 10);
+        display.println(F("Game"));
+        display.setCursor(40, 30);
+        display.println(F("Over"));
+        display.display();
+
+        unsigned long currentMillis = millis();
+
+        if (currentMillis - previousMillis >= interval) {
+          previousMillis = currentMillis;
+          if (FontColor == WHITE) {
+            FontColor = BLACK;
+          } else {
+              FontColor = WHITE;
+            }
+        }
+
+       if (ButtonOn == HIGH){
+        Current_state = S_Start;
+       }
+      }
+    break;
+    }
+
+  case S_Score:{
+    CheckFinalScore = LOW;
+    display.clearDisplay();
+    display.setTextSize(1); // Draw 2X-scale text
+    display.setTextColor(FontColor);
+    display.setCursor(35, 10);
+    display.print(F("Your Score"));
+    display.setTextSize(2);
+    display.setTextColor(FontColor);
+    display.setCursor(55, 30);
+    display.print((score));
+    display.display();
+
+    unsigned long currentMillis = millis();
+
+    if (currentMillis - previousMillis >= interval) {
+          previousMillis = currentMillis;
+          if (FontColor == WHITE) {
+            FontColor = BLACK;
+          } else {
+              FontColor = WHITE;
+            }
+        }
+    if (ButtonOn == HIGH){
+          Current_state = S_Start;
+         }
+        }
+      break;
+      }
 }
 
 void Congrats() {
-display.clearDisplay();
-display.drawBitmap(0, 0, Congrats_page, 128, 64, WHITE);
-display.invertDisplay(ledState);
-display.display();
+  display.clearDisplay();
+  display.drawBitmap(0, 0, Congrats_page, 128, 64, WHITE);
+  display.invertDisplay(FontColor);
+  display.display();
 
-unsigned long currentMillis = millis();
+  unsigned long currentMillis = millis();
 
   if (currentMillis - previousMillis >= interval) {
-    // save the last time you blinked the LED
-    previousMillis = currentMillis;
-
-    // if the LED is off turn it on and vice-versa:
-    if (ledState == LOW) {
-      ledState = HIGH;
-    } else {
-      ledState = LOW;
-    }
-}}
+          previousMillis = currentMillis;
+          if (FontColor == WHITE) {
+            FontColor = BLACK;
+          } else {
+              FontColor = WHITE;
+            }
+        }
+}
 
 void Title() {
-display.clearDisplay();
-display.drawBitmap(0, 0, Title_page, 128, 64, WHITE);
-display.setTextSize(0); // Draw 2X-scale text
-display.setTextColor(ledState);
-display.setCursor(62, 0);
-display.print(F("Press Start "));
-display.display();
+  ButtonOn = LOW;
+  display.clearDisplay();
+  display.drawBitmap(0, 0, Title_page, 128, 64, WHITE);
+  display.setTextSize(0); // Draw 2X-scale text
+  display.setTextColor(FontColor);
+  display.setCursor(62, 0);
+  display.print(F("Press Start "));
+  display.display();
 
-unsigned long currentMillis = millis();
+  unsigned long currentMillis = millis();
 
   if (currentMillis - previousMillis >= interval) {
-    // save the last time you blinked the LED
-    previousMillis = currentMillis;
-
-    // if the LED is off turn it on and vice-versa:
-    if (ledState == WHITE) {
-      ledState = BLACK;
-    } else {
-      ledState = WHITE;
-    }
-}}
+          previousMillis = currentMillis;
+          if (FontColor == WHITE) {
+            FontColor = BLACK;
+          } else {
+              FontColor = WHITE;
+            }
+        }
+}
 
 void Play() {
+  ButtonOn = LOW;
   x = analogRead(A1);
   x_ave = .2*x + .8*x_old;
   x_old = x_ave;
   Cart_x = (map(x_ave , 0, 1023 , 98, 5 ));
+  display.invertDisplay(LOW);
   display.clearDisplay();
   display.setTextSize(0); // Draw 2X-scale text
   display.setTextColor(WHITE);
@@ -251,7 +371,6 @@ void Play() {
   display.print(F("Score: "));
   display.setCursor(38, 2);
   display.print(score);
-  Serial.println(score);
   display.setCursor(83, 2);
   display.print(F("Level: "));
   display.setCursor(120, 2);
@@ -259,38 +378,41 @@ void Play() {
   display.drawBitmap(Cart_x, 45, Cart, 16, 15, WHITE);
   display.drawRect(0, 0, display.width(), 62, WHITE);
   
-
-  if(TotalApples == 5){
-Apple_y_new = Apple_y_new + 1;
-TotalApples = 0;
-  }
+  if  (NumberofApples == 10){
+    Apple_y_new = Apple_y_new + 1;
+    NumberofApples = 0;
+    CheckScore = HIGH;
+    }
   if (Apple_y_new == 6) {
     Apple_y_new = 1;
-  }
+    CheckFinalScore = HIGH;
+    CheckScore = LOW;
+    }
   
-  for(f=0; f< 1; f++) {
+  for (f=0; f< 1; f++) {
     display.drawBitmap(Apple_x, Apple_y, Apple, 8, 9, WHITE);
     }
-
-    display.display(); // Show the display buffer on the screen
-    for(f=0; f< 1; f++) {
-      Apple_y += Apple_y_new;
-      if (Apple_x >= Cart_x && Apple_x <= (Cart_x + 16) && Apple_y >= 40) {
-        score++;
+  display.display(); // Show the display buffer on the screen
+    
+  for(f=0; f< 1; f++) {
+    Apple_y += Apple_y_new;
+    if (Apple_x >= Cart_x && Apple_x <= (Cart_x + 16) && Apple_y >= 40) {
+      score++;
       }
-      // If snowflake is off the bottom of the screen...
-      if (Apple_y >= 53 || (Apple_x >= Cart_x && Apple_x <= (Cart_x + 16) && Apple_y >= 40)) {
-        Apple_x = random(11,102);
-        Apple_y = 5;
-        TotalApples++;
+    if (Apple_y >= 53 || (Apple_x >= Cart_x && Apple_x <= (Cart_x + 16) && Apple_y >= 40)) {
+      Apple_x = random(11,102);
+      Apple_y = 5;
+      NumberofApples++;
+      TotalApples++;
       }
     }
-
 }
 
-    
-
-  
-
-
-
+void ISR_Start(){
+ uint32_t timeNewKeyPress = millis(); // set the time the SS_button is not pressed
+ static uint32_t timeLastKeyPress = 0; //time the SS_button is pressed
+ if ( timeNewKeyPress - timeLastKeyPress >= timeDebounce) { // equating to the timeDebounce              
+    ButtonOn = !ButtonOn; //sets the state of the button everytime the SS_button is pressed
+    }
+    timeLastKeyPress = timeNewKeyPress; //reset the debouncing timer
+}
