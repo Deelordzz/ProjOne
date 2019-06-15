@@ -50,7 +50,7 @@ FSM or Finite State Machine is a method of modelling a system comprise of a limi
   
 The purpose of this report is to present a Game Design that will be embedded in a microcontroller that will implement FSM. The mini OLED display will project the game play. It will display a title page, score page and the game play.
 
-
+The idea of the game is to catch apples that are falling on the ground using a cart. The cart can be moved using a potentiometer. The game has five levels. The higher the level the faster the apples to reach the ground. Each level has ten falling apples. To proceed to the next level, you need to catch half of the total falling apples.
 
 The next chapter of this report discusses the methods and materials used to create a game in the microcontroller.
   
@@ -86,7 +86,6 @@ In this project, an FSM is implemented. I created a list of states, events and a
 |S_Pause| CheckFinalScore  | Pause Game  |
 |S_Nextlevel|Highscore |Check Score |
 |S_Score|Lowscore|Display Final Score|
-
 _Table 1: States, Events and Actions_
 
 These table will be use to model an FSM. The FSM model is graphically presented by circle to show states and actions, and arrows to show the events.  Figure 3 provides the FSM model of my Game Play.
@@ -318,7 +317,7 @@ _Code 6: void setup()_
 
   
 
-The next part of the program initializes the pins where the hardwares are designated. The **R_button** and the **SS_button** are set as an input signals. The internal pullup resistor was also enabled for these buttons. **attachInterrupt** functions were used in this program to call the **ISR_Start_Stop** and **ISR_Reset** functions. The displayType was set as **COMMON_CATHODE** which was modified in the SevSeg library. The 12 pins of the bubble display were defined here and mapped to which microcontroller pins it is connected. Other variables were left as is and were part of the SevSeg library as default.
+The **Loop()** function consist of  a **switch** statement in which there are five cases. These cases represents the states of the FSM or the **enum** value that has been declared earlier. Each cases has actions to be done and events or inputs to change case.  
 
     void  loop() {    
     switch (Current_state){ // switch function    
@@ -439,93 +438,123 @@ The next part of the program initializes the pins where the hardwares are design
  
 _Code 7: void loop()_
 
+The next function is the **Congrats()** function. This function will display the **Congrats_page** bitmap while alternating the color of the display by using the **display.invertDisplay** function.  
+
+    void  Congrats() {    
+    display.clearDisplay();// clear the display    
+    display.drawBitmap(0, 0, Congrats_page, 128, 64, WHITE);// draw the Congrats_page bitmap    
+    display.invertDisplay(FontColor); //invert colors    
+    display.display();//update display    
+          
+    unsigned  long currentMillis =  millis();//sets the current time in millisecond    
+          
+    if (currentMillis - previousMillis >= interval) {// comparing the difference between current time and previous time to interval    
+    previousMillis = currentMillis;// save the last time the fontcolor change    
+    if (FontColor == WHITE) {// Change color white to black and vice versa    
+    FontColor = BLACK;    
+    } else {    
+    FontColor = WHITE;    
+    }    
+    }    
+    }
+  _Code 8: void Congrats()_
+
+In **Title()** Function, the **Title_page** bitmap will be displayed with a blinking text '**Press Start**'.
+
+    void  Title() {    
+    ButtonOn = LOW;//sets the ButtonOn State to low    
+    display.clearDisplay();// clear the display    
+    display.drawBitmap(0, 0, Title_page, 128, 64, WHITE);// draw the Title_page bitmap    
+    display.setTextSize(0); // text size    
+    display.setTextColor(FontColor); //text color    
+    display.setCursor(62, 0);// text position    
+    display.print(F("Press Start "));//display text    
+    display.display();//update display    
+          
+    unsigned  long currentMillis =  millis();//sets the current time in millisecond    
+          
+    if (currentMillis - previousMillis >= interval) {// comparing the difference between current time and previous time to interval    
+    previousMillis = currentMillis;// save the last time the fontcolor change    
+    if (FontColor == WHITE) {// Change Fontcolor white to black and vice versa    
+    FontColor = BLACK;    
+    } else {    
+    FontColor = WHITE;    
+    }    
+    }    
+    }
+   _Code 9: void Title()_
+
+
+The **S_button** when pressed will call the function **ISR_Start**. This function will check the state of the **ButtonOn**. This variable will have different function in each case of the program.  This function also debounces the signal of the S_button.
+
+ 
+
+    void  ISR_Start(){    
+    uint32_t timeNewKeyPress =  millis(); // set the time the S_button is not pressed    
+    static  uint32_t timeLastKeyPress =  0; //time the S_button is pressed
+    if ( timeNewKeyPress - timeLastKeyPress >= timeDebounce) { // equating to the timeDebounce    
+    ButtonOn =  !ButtonOn; //sets the state of the button everytime the SS_button is pressed    
+    }    
+    timeLastKeyPress = timeNewKeyPress; //reset the debouncing timer    
+    }  
+
+_Code 10: void ISR_Start()_
+
+The last function of the program is the **void Play()** function. This is where the game play is coded. This function will repeatedly display the cart and the apples but with updated position. This will make it as if they are moving. the cart position is being controlled by the potentiometer taking its value on x-axis while its y-axis position is constant. The apple position randomly picks a value in x-axis and the its y-axis always starts at 5 and increasing by increments. This will project the apples in the display as if they are falling on the ground. The increments increases as the level increases. This will make the apple fall faster. When the position of the cart is equal to the position of the apple, a point will be added to the score. 
+
+    void  Play() {    
+    ButtonOn = LOW;//sets the ButtonOn State to low    
+    x =  analogRead(A1);//reads value in A1    
+    x_ave =  .2*x +  .8*x_old;// running average of the potentiometer    
+    x_old = x_ave;//saves the last value of x    
+    Cart_x = (map(x_ave , 0, 1023 , 5, 98 ));// map value of the potentometer    
+    display.invertDisplay(LOW); //sets the color of display to black    
+    display.clearDisplay();// clear the display    
+    display.setTextSize(0); // text size    
+    display.setTextColor(WHITE);// text color    
+    display.setCursor(2, 2);//text position    
+    display.print(F("Score: "));//display text    
+    display.setCursor(38, 2);//text position    
+    display.print(score);//display score    
+    display.setCursor(83, 2);//text position    
+    display.print(F("Level: "));//display text    
+    display.setCursor(120, 2);//text position    
+    display.print(Apple_y_new);//display level    
+    display.drawBitmap(Cart_x, 45, Cart, 16, 15, WHITE);// draw the Cart bitmap    
+    display.drawRect(0, 0, display.width(), 62, WHITE);// draw border    
+    if (NumberofApples ==  10){ // check if number of apples reached 10    
+    Apple_y_new = Apple_y_new +  1;// add 1 level    
+    NumberofApples =  0;// reset NmberofApples    
+    CheckScore = HIGH;//sets the checkscore to high    
+    }    
+    if (Apple_y_new ==  6) {// check if Apple_y_new reached 6    
+    Apple_y_new =  1;// resets Apple_y_new    
+    CheckFinalScore = HIGH;// Sets the CheckinalScore to High    
+    CheckScore = LOW;//Sets the CheckScore to Low    
+    }    
+    for (f=0; f<  1; f++) { //Initialize apple    
+    display.drawBitmap(Apple_x, Apple_y, Apple, 8, 9, WHITE);//draw Apple Bitmap    
+    }    
+    display.display(); //Update display    
+    for(f=0; f<  1; f++) { // initialize next apple position    
+    Apple_y += Apple_y_new; // next y position of the apple    
+    if (Apple_x >= Cart_x && Apple_x <= (Cart_x +  16) && Apple_y >=  40) {// check if the apple position is same with the cart position    
+    score++;// add score    
+    }    
+    if (Apple_y >=  53  || (Apple_x >= Cart_x && Apple_x <= (Cart_x +  16) && Apple_y >=  40)) {//check if the apple reached the end of the sreen    
+    Apple_x =  random(11,102); // produce random x-axis position    
+    Apple_y =  5;//set y-axis position to 5    
+    NumberofApples++;// add NumberofApples    
+    TotalApples++;//add TotalApples    
+    }    
+    }    
+    }
+_Code 11: void Play()_
+
   
 
-The **loop** function contains an ‘if else’ statement and an ‘if’ statement. The ‘if else’ statement is continuously checking the state of the variable **ButtonOn** which was initialized as false value. If the **ButtonOn** is true, the function **stopwatch** will be called else the **Stoptime** variable will start counting while displaying the present value of the **deciSecond**. On the other hand, the ‘if’ statement is checking the value of the **deciSecond**. Since this is a minimal stopwatch, I have decided to make it a 15minute stopwatch. If the **deciSecond** reach the value of 9000 or exactly 15minutes, the stopwatch will be reset back to zero.
 
-  
 
-void stopwatch(){
-
-char tempString[10]; // display the current time in decisecond.
-
-sprintf(tempString, "%4d", deciSecond);
-
-myDisplay.DisplayString(tempString, 4);
-
-OnTime = (millis() - Stoptime); // time the stopwatch is counting.
-
-deciSecond = (OnTime/100); // millisecond is converted to deciseconds.
-
-}
-
-  
-
-_Code 5: void stopwatch()_
-
-  
-
-Going back to the loop function, when the **ButtonOn** is true, the **stopwatch** function will be called. In this function, the variable **OnTime** will start to count and the **Stoptime** value will be equal to whatever value it is stopped the moment the **ButtonOn** becomes true. The **deciSecond** will be displayed into the bubble display. The value of the **deciSecond** is the value of **OnTime** and divided by 100 to convert the value which is in millisecond to decisecond. When the **ButtonOn** is false, the **OnTime** will stop counting and will carry the value to get the new **Stoptime** value so when the **ButtonOn** is true again it will start to count where it was left off unless it was reset.
-
-  
-
-void ISR_Start_Stop(){
-
-uint32_t timeNewKeyPress = millis(); // set the time the SS_button is not pressed
-
-static uint32_t timeLastKeyPress = 0; //time the SS_button is pressed
-
-if ( timeNewKeyPress - timeLastKeyPress >= timeDebounce) { // equating to the timeDebounce
-
-ButtonOn = !ButtonOn; //sets the state of the button everytime the SS_button is pressed
-
-}
-
-timeLastKeyPress = timeNewKeyPress; //reset the debouncing timer
-
-}
-
-  
-
-_Code 6: ISR_Start_Stop()_
-
-  
-
-The two connected buttons will call different functions when pressed. The **SS_button** will call the **ISR_Start_Stop** function. This function is responsible in setting the state of the variable **ButtonOn**. Every time it is pressed the value of the **ButtonOn** change to either true or false since this is declared as a bool integer. The **SS_button** signal is also being debounce in this function as shown in Code 6.
-
-  
-
-void ISR_Reset(){
-
-uint32_t timeNewKeyPress = millis(); // set the time the R_button is not pressed
-
-static uint32_t timeLastKeyPress = 0; //time the R_button is pressed
-
-if ( timeNewKeyPress - timeLastKeyPress >= timeDebounce) { // equating to the timeDebounce
-
-if (ButtonOn == LOW){ // check if the ButtonOn is OFF
-
-OnTime = 0; //Reset the OnTime to zero
-
-deciSecond = 0; //Rreset the deciSecond to zero
-
-}
-
-}
-
-timeLastKeyPress = timeNewKeyPress; //reset the debouncing timer
-
-}
-
-  
-
-_Code 7: ISR_Reset()_
-
-  
-
-The other button which is the **R_button** will call the function **ISR_Reset** when pressed. This function will check the state of the **ButtonOn** if it is false. If the **ButtonOn** is false, the values of **OnTime** and **deciSecond** variables will be set zero. Nothing will happen if the **ButtonOn** is true. This function also debounces the signal of the R_button.
-
-  
 
 ## **Results**
 
