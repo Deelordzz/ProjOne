@@ -86,6 +86,7 @@ In this project, an FSM is implemented. I created a list of states, events and a
 |S_Pause| CheckFinalScore  | Pause Game  |
 |S_Nextlevel|Highscore |Check Score |
 |S_Score|Lowscore|Display Final Score|
+
 _Table 1: States, Events and Actions_
 
 These table will be use to model an FSM. The FSM model is graphically presented by circle to show states and actions, and arrows to show the events.  Figure 3 provides the FSM model of my Game Play.
