@@ -1,3 +1,7 @@
+/* Apple Frenzy */
+
+/* Author: Lourdrigo de Castro*/
+
 #include <Arduino.h>
 #include <SPI.h>
 #include <Wire.h>
@@ -7,48 +11,43 @@
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 
-#define NUMFLAKES     10
-
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire);
 
-#define LOGO_HEIGHT   64  
-#define LOGO_WIDTH    128
-
-uint32_t x = 0;
-uint32_t x_ave =0;
-uint32_t x_old =0;
-uint8_t Cart_x;
-uint8_t Apple_x;
-uint8_t Apple_y;
-static int8_t Apple_y_new = 1;
-uint8_t score = 0;
-uint8_t TotalApples = 0;
-uint8_t NumberofApples = 0;
-int8_t f;
-uint8_t S_button = 16;
+uint32_t x = 0; //value of potentiometer
+uint32_t x_ave =0; //running average of the potentiometer value 
+uint32_t x_old =0; //previous reading of the running average
+uint8_t Cart_x; //cart position in x axis
+uint8_t Apple_x = 11; //apple position in x axis
+uint8_t Apple_y = 5; // apple position in y axis
+static int8_t Apple_y_new = 1; // apple new position in y axis
+uint8_t score = 0; // game score
+uint8_t TotalApples = 0; // total apples per full game
+uint8_t NumberofApples = 0; // total apples per game level
+int8_t f; // used for for-loops
+uint8_t S_button = 16; // button connected to pin 16
 const uint32_t timeDebounce = 500; //debounce time
 bool ButtonOn = LOW; // use to detect if the button is ON
-bool CheckScore = LOW;
-bool CheckFinalScore = LOW;
-int FontColor = WHITE;
-unsigned long previousMillis = 0;
-const long interval = 500;
+bool CheckScore = LOW; // use to check score
+bool CheckFinalScore = LOW; // use to check final score
+int FontColor = WHITE; // font color
+unsigned long previousMillis = 0; // will store last time the font color was updated
+const long interval = 500; // interval at which the font change color
 
-enum State{S_Start, S_Play, S_Score, S_Nextlevel, S_Pause};
-     State Current_state = S_Start;
+enum State{S_Start, S_Play, S_Score, S_Nextlevel, S_Pause}; // state variables
+     State Current_state = S_Start; // initial state
 
-static const unsigned char PROGMEM Apple[] = 
+static const unsigned char PROGMEM Apple[] = // Apple Bitmap
 {
 0x00, 0x04, 0x3F, 0x47, 0x47, 0x5F, 0x7F, 0x3F, 0x1B, 0x00, 0x00, 0x00, 0x00, 
 };
 
-static const unsigned char PROGMEM Cart[] =
+static const unsigned char PROGMEM Cart[] = // Cart Bitmap
 {
 0x00, 0x00, 0x70, 0x00, 0x1F, 0xFE, 0x01, 0x12, 0x0F, 0xFE, 0x09, 0x12, 0x09, 0x12, 0x0F, 0xFE,
 0x0F, 0xFE, 0x0F, 0xFE, 0x08, 0x00, 0x00, 0x00, 0x06, 0x0C, 0x06, 0x0C, 0x00, 0x00, 
 };
 
-static const unsigned char PROGMEM Title_page[] =
+static const unsigned char PROGMEM Title_page[] = // Title Page Bitmap
 {
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -116,7 +115,7 @@ static const unsigned char PROGMEM Title_page[] =
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-static const unsigned char PROGMEM Congrats_page[] =
+static const unsigned char PROGMEM Congrats_page[] = // Congratulation page Bitmap
 {
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 0x00, 0x40, 0x00, 0x00, 0x00, 0x40, 0xF8, 0x20, 0x18, 0x00, 0x00, 0x00, 0x78, 0x08, 0x00, 0x04,
@@ -184,150 +183,148 @@ static const unsigned char PROGMEM Congrats_page[] =
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x70, 0x00, 0x00, 0x0F, 0x00, 0x00, 0x00, 0x08, 0x00
 };
 
-void Play();
-void Title();
-void Congrats();
-void ISR_Start(); // Start Stop func
+void Play(); // Gameplay function
+void Title(); // Title Page Function
+void Congrats(); // Congrats Page Function
+void ISR_Start(); // Start Function
 
 void setup() {
   pinMode(S_button, INPUT_PULLUP); // set the digital pin as input and enable internal pullup resistor
-  attachInterrupt(digitalPinToInterrupt(S_button), ISR_Start, FALLING); // attached interrupt to call ISR_Reset()
-  Serial.begin(9600);
-  Wire.setClock(3400000);
-  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
-  display.display();
-  
+  attachInterrupt(digitalPinToInterrupt(S_button), ISR_Start, FALLING); // attached interrupt to call ISR_Start()
+  Serial.begin(9600); // sets the data transmission speed
+  Wire.setClock(3400000); // sets the I2C clock frequency
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C); //Initializes the interface to the OLED screen
 }
 
 void loop() {
-switch (Current_state){
-  case S_Start:{
-    Title();
-    score = 0;
-    TotalApples = 0;
-    Apple_y_new = 1;
-    if(ButtonOn == HIGH){
-      Current_state = S_Play;
+switch (Current_state){ // switch function 
+  case S_Start:{ // state S_Start
+    Title(); // Call Title()
+    score = 0; // Reset score
+    TotalApples = 0; // Reset Totalapples
+    Apple_y_new = 1; // Reset Apple_y_new
+    if(ButtonOn == HIGH){ // checks the ButtonOn State
+      Current_state = S_Play; // Sets the Current_state to S_Play
     }
-  break;
+  break; // exit
   }
 
-  case S_Play:{
-    Play();
-    if(ButtonOn == HIGH){
-      Current_state = S_Pause;
+  case S_Play:{ // state S_Play
+    Play(); // Call Play()
+    if(ButtonOn == HIGH){ // checks the ButtonOn State
+      Current_state = S_Pause; // Sets the Current_state to S_Pause
     }
-    if(CheckScore == HIGH){
-      Current_state = S_Nextlevel;
+    if(CheckScore == HIGH){ // Checks the CheckScore State 
+      Current_state = S_Nextlevel;// Sets the Current_state to S_Nextlevel
     }
-    if(CheckFinalScore == HIGH){
-      Current_state = S_Score;
+    if(CheckFinalScore == HIGH){ // Checks the CheckFinalScore state
+      Current_state = S_Score;// Sets the Current_state to S_Score
     }
-  break;
+  break; // exits
   }
 
-  case S_Pause:{
-    ButtonOn = LOW;
-    display.setTextSize(0); // Draw 2X-scale text
-    display.setTextColor(FontColor);
-    display.setCursor(40, 20);
-    display.print(F("PAUSED")); 
-    display.display();
+  case S_Pause:{ // state S_Pause
+    ButtonOn = LOW; // sets the ButtonOn to low
+    display.setTextSize(0); // text size
+    display.setTextColor(FontColor); // text Color
+    display.setCursor(40, 20); // Text position
+    display.print(F("PAUSED")); // display text
+    display.display(); // update display
 
-    unsigned long currentMillis = millis();
+    unsigned long currentMillis = millis(); //sets the current time in millisecond
 
-    if (currentMillis - previousMillis >= interval) {
-      previousMillis = currentMillis;
-      if (FontColor == WHITE) {
+    if (currentMillis - previousMillis >= interval) { // comparing the difference between current time and previous time to interval
+      previousMillis = currentMillis; // save the last time the fontcolor change
+      if (FontColor == WHITE) { // Change font color white to black and vice versa
         FontColor = BLACK;
       } else {
           FontColor = WHITE;
         }
     }
     
-    if  (ButtonOn == HIGH){
-      Current_state = S_Play;
-    }
-  break;
+    if  (ButtonOn == HIGH){ //checks the ButtonOn state
+      Current_state = S_Play;// sets the Current_state to S_Play
+    }  
+  break; // exit
   }
 
-  case S_Nextlevel:{
-    CheckScore = LOW;
-    if  (score >= TotalApples/2 ) {
-      Congrats();
-      if  (ButtonOn == HIGH){
-        Current_state = S_Play;
+  case S_Nextlevel:{ // State S_Nextlevel
+    CheckScore = LOW;// sets the CheckScore to low
+    if  (score >= TotalApples/2 ) { // checks the score if its equal or more than half of the TotalApples
+      Congrats(); // Call Congrats()
+      if  (ButtonOn == HIGH){ // Checks the ButtonOn State
+        Current_state = S_Play; // sets the Current_state to S_Play
       } 
     } else {
-        display.clearDisplay();
-        display.setTextSize(2); // Draw 2X-scale text
-        display.setTextColor(FontColor);
-        display.setCursor(40, 10);
-        display.println(F("Game"));
-        display.setCursor(40, 30);
-        display.println(F("Over"));
-        display.display();
+        display.clearDisplay(); // clear the display
+        display.setTextSize(2); // text size
+        display.setTextColor(FontColor); // text color
+        display.setCursor(40, 10); //text position 
+        display.println(F("Game")); // display text
+        display.setCursor(40, 30);// text position
+        display.println(F("Over"));//display text
+        display.display();// update display
 
-        unsigned long currentMillis = millis();
+        unsigned long currentMillis = millis();//sets the current time in millisecond
 
-        if (currentMillis - previousMillis >= interval) {
-          previousMillis = currentMillis;
-          if (FontColor == WHITE) {
+        if (currentMillis - previousMillis >= interval) {// comparing the difference between current time and previous time to interval
+          previousMillis = currentMillis;// save the last time the fontcolor change
+          if (FontColor == WHITE) {// Change font color white to black and vice versa
             FontColor = BLACK;
           } else {
               FontColor = WHITE;
             }
         }
 
-       if (ButtonOn == HIGH){
-        Current_state = S_Start;
+       if (ButtonOn == HIGH){//checks the ButtonOn state
+        Current_state = S_Start;// sets the Current_state to S_Start
        }
       }
-    break;
+    break;//exit
     }
 
-  case S_Score:{
-    CheckFinalScore = LOW;
-    display.clearDisplay();
-    display.setTextSize(1); // Draw 2X-scale text
-    display.setTextColor(FontColor);
-    display.setCursor(35, 10);
-    display.print(F("Your Score"));
-    display.setTextSize(2);
-    display.setTextColor(FontColor);
-    display.setCursor(55, 30);
-    display.print((score));
-    display.display();
+  case S_Score:{ // State S_Score
+    CheckFinalScore = LOW; // sets the CheckFinalScore to low
+    display.clearDisplay(); // clear the display
+    display.setTextSize(1); // text size
+    display.setTextColor(FontColor); // Text color
+    display.setCursor(35, 10); // text position
+    display.print(F("Your Score")); // disply text
+    display.setTextSize(2); // text size
+    display.setTextColor(FontColor); //text color
+    display.setCursor(55, 30);//text position
+    display.print((score)); // display score
+    display.display();//update display
 
-    unsigned long currentMillis = millis();
+    unsigned long currentMillis = millis();//sets the current time in millisecond
 
-    if (currentMillis - previousMillis >= interval) {
-          previousMillis = currentMillis;
-          if (FontColor == WHITE) {
+    if (currentMillis - previousMillis >= interval) {// comparing the difference between current time and previous time to interval
+          previousMillis = currentMillis;// save the last time the fontcolor change
+          if (FontColor == WHITE) {// Change font color white to black and vice versa
             FontColor = BLACK;
           } else {
               FontColor = WHITE;
             }
         }
-    if (ButtonOn == HIGH){
-          Current_state = S_Start;
+    if (ButtonOn == HIGH){//checks the ButtonOn state
+          Current_state = S_Start;// sets the Current_state to S_Start
          }
         }
-      break;
+      break; // exit
       }
 }
 
 void Congrats() {
-  display.clearDisplay();
-  display.drawBitmap(0, 0, Congrats_page, 128, 64, WHITE);
-  display.invertDisplay(FontColor);
-  display.display();
+  display.clearDisplay();// clear the display
+  display.drawBitmap(0, 0, Congrats_page, 128, 64, WHITE);// draw the Congrats_page bitmap
+  display.invertDisplay(FontColor); //invert colors
+  display.display();//update display
 
-  unsigned long currentMillis = millis();
+  unsigned long currentMillis = millis();//sets the current time in millisecond
 
-  if (currentMillis - previousMillis >= interval) {
-          previousMillis = currentMillis;
-          if (FontColor == WHITE) {
+  if (currentMillis - previousMillis >= interval) {// comparing the difference between current time and previous time to interval
+          previousMillis = currentMillis;// save the last time the fontcolor change
+          if (FontColor == WHITE) {// Change color white to black and vice versa
             FontColor = BLACK;
           } else {
               FontColor = WHITE;
@@ -336,20 +333,20 @@ void Congrats() {
 }
 
 void Title() {
-  ButtonOn = LOW;
-  display.clearDisplay();
-  display.drawBitmap(0, 0, Title_page, 128, 64, WHITE);
-  display.setTextSize(0); // Draw 2X-scale text
-  display.setTextColor(FontColor);
-  display.setCursor(62, 0);
-  display.print(F("Press Start "));
-  display.display();
+  ButtonOn = LOW;//sets the ButtonOn State to low
+  display.clearDisplay();// clear the display
+  display.drawBitmap(0, 0, Title_page, 128, 64, WHITE);// draw the Title_page bitmap
+  display.setTextSize(0); // text size
+  display.setTextColor(FontColor); //text color
+  display.setCursor(62, 0);// text position
+  display.print(F("Press Start "));//display text
+  display.display();//update display
 
-  unsigned long currentMillis = millis();
+  unsigned long currentMillis = millis();//sets the current time in millisecond
 
-  if (currentMillis - previousMillis >= interval) {
-          previousMillis = currentMillis;
-          if (FontColor == WHITE) {
+  if (currentMillis - previousMillis >= interval) {// comparing the difference between current time and previous time to interval
+          previousMillis = currentMillis;// save the last time the fontcolor change
+          if (FontColor == WHITE) {// Change Fontcolor white to black and vice versa
             FontColor = BLACK;
           } else {
               FontColor = WHITE;
@@ -358,59 +355,59 @@ void Title() {
 }
 
 void Play() {
-  ButtonOn = LOW;
-  x = analogRead(A1);
-  x_ave = .2*x + .8*x_old;
-  x_old = x_ave;
-  Cart_x = (map(x_ave , 0, 1023 , 98, 5 ));
-  display.invertDisplay(LOW);
-  display.clearDisplay();
-  display.setTextSize(0); // Draw 2X-scale text
-  display.setTextColor(WHITE);
-  display.setCursor(2, 2);
-  display.print(F("Score: "));
-  display.setCursor(38, 2);
-  display.print(score);
-  display.setCursor(83, 2);
-  display.print(F("Level: "));
-  display.setCursor(120, 2);
-  display.print(Apple_y_new);
-  display.drawBitmap(Cart_x, 45, Cart, 16, 15, WHITE);
-  display.drawRect(0, 0, display.width(), 62, WHITE);
+  ButtonOn = LOW;//sets the ButtonOn State to low
+  x = analogRead(A1);//reads value in A1
+  x_ave = .2*x + .8*x_old;// running average of the potentiometer
+  x_old = x_ave;//saves the last value of x
+  Cart_x = (map(x_ave , 0, 1023 , 5, 98 ));// map value of the potentometer
+  display.invertDisplay(LOW); //sets the color of display to black
+  display.clearDisplay();// clear the display
+  display.setTextSize(0); // text size
+  display.setTextColor(WHITE);// text color
+  display.setCursor(2, 2);//text position
+  display.print(F("Score: "));//display text
+  display.setCursor(38, 2);//text position
+  display.print(score);//display score
+  display.setCursor(83, 2);//text position
+  display.print(F("Level: "));//display text
+  display.setCursor(120, 2);//text position
+  display.print(Apple_y_new);//display level
+  display.drawBitmap(Cart_x, 45, Cart, 16, 15, WHITE);// draw the Cart bitmap
+  display.drawRect(0, 0, display.width(), 62, WHITE);// draw border
   
-  if  (NumberofApples == 10){
-    Apple_y_new = Apple_y_new + 1;
-    NumberofApples = 0;
-    CheckScore = HIGH;
+  if  (NumberofApples == 10){ // check if number of apples reached 10
+    Apple_y_new = Apple_y_new + 1;// add 1 level 
+    NumberofApples = 0;// reset NmberofApples
+    CheckScore = HIGH;//sets the checkscore to high
     }
-  if (Apple_y_new == 6) {
-    Apple_y_new = 1;
-    CheckFinalScore = HIGH;
-    CheckScore = LOW;
+  if (Apple_y_new == 6) {// check if Apple_y_new reached 6
+    Apple_y_new = 1;// resets Apple_y_new
+    CheckFinalScore = HIGH;// Sets the CheckinalScore to High
+    CheckScore = LOW;//Sets the CheckScore to Low
     }
   
-  for (f=0; f< 1; f++) {
-    display.drawBitmap(Apple_x, Apple_y, Apple, 8, 9, WHITE);
+  for (f=0; f< 1; f++) { //Initialize apple 
+    display.drawBitmap(Apple_x, Apple_y, Apple, 8, 9, WHITE);//draw Apple Bitmap
     }
-  display.display(); // Show the display buffer on the screen
+  display.display(); //Update display
     
-  for(f=0; f< 1; f++) {
-    Apple_y += Apple_y_new;
-    if (Apple_x >= Cart_x && Apple_x <= (Cart_x + 16) && Apple_y >= 40) {
-      score++;
+  for(f=0; f< 1; f++) { // initialize next apple position
+    Apple_y += Apple_y_new; // next y position of the apple
+    if (Apple_x >= Cart_x && Apple_x <= (Cart_x + 16) && Apple_y >= 40) {// check if the apple position is same with the cart position
+      score++;// add score
       }
-    if (Apple_y >= 53 || (Apple_x >= Cart_x && Apple_x <= (Cart_x + 16) && Apple_y >= 40)) {
-      Apple_x = random(11,102);
-      Apple_y = 5;
-      NumberofApples++;
-      TotalApples++;
+    if (Apple_y >= 53 || (Apple_x >= Cart_x && Apple_x <= (Cart_x + 16) && Apple_y >= 40)) {//check if the apple reached the end of the sreen
+      Apple_x = random(11,102); // produce random x-axis position
+      Apple_y = 5;//set y-axis position to 5
+      NumberofApples++;// add NumberofApples
+      TotalApples++;//add TotalApples
       }
     }
 }
 
 void ISR_Start(){
- uint32_t timeNewKeyPress = millis(); // set the time the SS_button is not pressed
- static uint32_t timeLastKeyPress = 0; //time the SS_button is pressed
+ uint32_t timeNewKeyPress = millis(); // set the time the S_button is not pressed
+ static uint32_t timeLastKeyPress = 0; //time the S_button is pressed
  if ( timeNewKeyPress - timeLastKeyPress >= timeDebounce) { // equating to the timeDebounce              
     ButtonOn = !ButtonOn; //sets the state of the button everytime the SS_button is pressed
     }
