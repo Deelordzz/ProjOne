@@ -560,41 +560,44 @@ _Code 11: void Play()_
 
   
 
-All hardwares are functioning as programmed. The **SS_button** starts and stops the stopwatch while the **R_button** resets the stopwatch back to zero. The counting before the decimal point is in seconds with a timing of 10 deciseconds.
+All hardwares are functioning as programmed. The mini OLED display project the game smoothly without any flickering. The **S_button** functions very well in game play and the potentiometer where very responsive in controlling the cart's position. 
 
   
+At the start of the game, a title page is shown on the display with a blinking '**Press Start**' text on the upper right of the screen.
 
-Three trials were conducted in testing this embedded system. The first trial was stopped at 6seconds. The values are identical with the bubble display and an external stopwatch.
+![enter image description here](https://i.ibb.co/55g24kY/20190615-214653.jpg)
+_Figure 4: Title Page without 'Press Start'_
 
-  
-
-![enter image description here](https://i.ibb.co/zJMh6Bw/fig11.png)
-
-  
-
-_Figure 4: First Trial_
+![enter image description here](https://i.ibb.co/1JVPB72/20190615-214718.jpg)
+_Figure 5: Title Page with 'Press Start'_
 
   
+When the **S_button** is pressed, the game will start. ![enter image description here](https://i.ibb.co/9g2NSfM/20190615-214755.jpg)
+_Figure 5: Game Play_
 
-The second and third trial also resulted an almost identical value from the bubble display and an external stopwatch. The time log is at 23.8 seconds and 59.9 seconds respectively.
+During game and the **S_button** is pressed again, the game will pause. The text 'PAUSED' is displayed in the middle of the screen and it is blinking. When the button is pressed again, it will resume the game.
 
-  
+![enter image description here](https://i.ibb.co/R2PdSq7/20190615-214839.jpg)
+_Figure 6: Game Play Paused_
 
-![enter image description here](https://i.ibb.co/vLNzXhN/fig12.jpg)
+ When a desired score is reached, a congrats page will be shown on the screen. The screen is inverted continuously to create an animation effect. when the **S_button** is pressed, it will proceed to the next level. 
 
-  
+![enter image description here](https://i.ibb.co/QK9HStQ/20190615-214942.jpg)
+_Figure 7: Congrats Page_
 
-_Figure 5: Second Trial_
+![enter image description here](https://i.ibb.co/0hhhVmx/20190615-214902.jpg)
+_Figure 8: Congrats Page Inverted_
 
-  
+When the last level is reached and game ends, the total score in the game will be projected.
 
-![fig13](https://i.ibb.co/FzS8gn7/fig13.png)
+![enter image description here](https://i.ibb.co/f2GPq51/20190615-215004.jpg)
+_Figure 9: Score Page_
 
-  
+If you are having a hard time playing the game and can't catch any apple then the game is over. The screen will show the game over page.
 
-_Figure 6: Third Trial_
+![enter image description here](https://i.ibb.co/9tN2S3V/20190615-215035.jpg) 
+_Figure 10: Game Over Page_
 
-  
 
 ## **Discussion**
 
@@ -620,15 +623,15 @@ Forum.arduino.cc. (2019). Arduino Forum - Index. [online] Available at: https://
 
   
 
-(4-digit), B. (2019). _Bubble Display - 7-Segment (4-digit) - COM-12710 - SparkFun Electronics_. [online] Sparkfun.com. Available at: https://www.sparkfun.com/products/retired/12710 [Accessed 14 May 2019].
+Arduino Retro Gaming With an OLED Display. (2019). Retrieved from https://www.makeuseof.com/tag/arduino-retro-gaming-oled-display/
 
   
 
-AG, I. (2019). _IRLU8743 - Infineon Technologies_. [online] Infineon.com. Available at: https://www.infineon.com/cms/en/product/power/mosfet/20v-300v-n-channel-power-mosfet/20v-30v-n-channel-power-mosfet/irlu8743/ [Accessed 14 May 2019].
+(2019). Retrieved from https://cdn-shop.adafruit.com/datasheets/SSD1306.pdf
 
   
 
-ElProCus - Electronic Projects for Engineering Students. (2019). _What is the MOSFET: Basics, Working Principle and Applications_. [online] Available at: https://www.elprocus.com/mosfet-as-a-switch-circuit-diagram-free-circuits/ [Accessed 14 May 2019].
+I2C - learn.sparkfun.com. (2019). Retrieved from https://learn.sparkfun.com/tutorials/i2c/all
 
   
 
