@@ -86,9 +86,10 @@ In this project, an FSM is implemented. I created a list of states, events and a
 |S_Pause| CheckFinalScore  | Pause Game  |
 |S_Nextlevel|Highscore |Check Score |
 |S_Score|Lowscore|Display Final Score|
+
 _Table 1: States, Events and Actions_
 
-These table will be use to model an FSM. The FSM model is graphically presented by circle to show states and actions, and arrows to show the events.  Figure 3 provides the FSM model of my Game Play.
+This table will be use to model an FSM. The FSM model is graphically presented by circle to show states and actions, and arrows to show the events.  Figure 3 provides the FSM model of my Game Play.
 
 ![enter image description here](https://i.ibb.co/k2bPfNh/Annotation-2019-06-15-174300.png)
 _Figure 3: FSM Model_
@@ -601,13 +602,10 @@ _Figure 10: Game Over Page_
 
 ## **Discussion**
 
+Programming a game is fun and exciting. I was able to create an electronic game that was somewhat addictive. But creating it was not that easy. It takes a lot of programming knowledge and skills to make your game play works. Good thing that there are ways to simplify the program code. One way is to implement FSM or Finite State Machine. This technique takes out the complexity of the program and makes the program execution straightforward.    
   
 
-This project shows us how a microcontroller can control multiple LED’s and present it as a numerical character on a device such as a bubble display. In this project, I use it to control the bubble display and to make it function as a stopwatch. Using the internal time function of the microcontroller, the timing of the stopwatch becomes accurate. I was able to eliminate the use of delay function that can make the other function of the program idle.
-
-  
-
-On a larger application, this can be use on an LED show that can project images and lights up a big event. This is truly one of an amazing purpose of an embedded system.
+This is very helpful in actual implementation in an industrial setup. Because of its simplier programming, debugging or troubleshooting will become easier. The program code will be easier to understand because of its straightforward approach.  
 
   
 
